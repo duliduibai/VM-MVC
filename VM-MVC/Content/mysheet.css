@@ -1,0 +1,286 @@
+﻿* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    position: relative;
+    min-height: 100%;
+    padding-top: 20px;
+    padding-bottom: 60px;
+}
+
+.page {
+    padding: 10px 50px 0px 50px;
+    /*background: url("../images/bg.jpg") ;*/
+}
+
+.footer {
+    height: 40px;
+    background: #eee;
+    width: 100%;
+    position: absolute;
+    text-align: center;
+    bottom: 0;
+}
+
+    .footer span {
+        padding: 0 2px;
+    }
+
+.ShoppingCart {
+    padding-top: 20px;
+}
+
+    .ShoppingCart table {
+        border: 1px solid #000
+    }
+
+        .ShoppingCart table th {
+            border: 1px solid #000
+        }
+
+        .ShoppingCart table td {
+            border: 1px solid #000
+        }
+
+.right {
+    text-align: right;
+}
+
+.textInput {
+    display: inline-block;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    padding: 5px 10px;
+    border: 1px solid #b7b7b7;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    font: normal 12px/normal "Times New Roman", Times, serif;
+    color: rgba(0,142,198,1);
+    -o-text-overflow: clip;
+    text-overflow: clip;
+    background: rgba(252,252,252,1);
+    -webkit-box-shadow: 2px 2px 2px 0 rgba(0,0,0,0.2) inset;
+    box-shadow: 2px 2px 2px 0 rgba(0,0,0,0.2) inset;
+    text-shadow: 1px 1px 0 rgba(255,255,255,0.66);
+    -webkit-transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
+    -moz-transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
+    -o-transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
+    transition: all 200ms cubic-bezier(0.42, 0, 0.58, 1);
+    width: 50px;
+    text-align: center;
+}
+
+.buttonInput {
+    display: inline-block;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    cursor: pointer;
+    padding: 5px 10px;
+    border: 1px solid #018dc4;
+    -webkit-border-radius: 1px;
+    border-radius: 1px;
+    font: normal 12px/normal "Times New Roman", Times, serif;
+    color: rgba(255,255,255,0.9);
+    -o-text-overflow: clip;
+    text-overflow: clip;
+    background: #0199d9;
+    -webkit-box-shadow: 2px 2px 2px 0 rgba(0,0,0,0.2);
+    box-shadow: 2px 2px 2px 0 rgba(0,0,0,0.2);
+    text-shadow: -1px -1px 0 rgba(15,73,168,0.66);
+    -webkit-transition: all 300ms cubic-bezier(0.42, 0, 0.58, 1);
+    -moz-transition: all 300ms cubic-bezier(0.42, 0, 0.58, 1);
+    -o-transition: all 300ms cubic-bezier(0.42, 0, 0.58, 1);
+    transition: all 300ms cubic-bezier(0.42, 0, 0.58, 1);
+}
+
+.addNumber{
+    padding:0 2px 0 2px;
+    width:15px;
+    height:20px;
+    text-align:center;
+}
+
+
+table.myTable {
+    font-family: verdana,arial,sans-serif;
+    font-size: 16px;
+    color: #333333;
+    border-width: 2px;
+    border-color: #a9c6c9;
+    border-collapse: collapse;
+}
+
+    table.myTable th {
+        border-width: 1px;
+        padding:10px 0px;
+        width:150px;
+        border-style: solid;
+        border-color: #a9c6c9;
+    }
+
+#testTableID #MovieName {
+    width: 300px;
+    word-break:break-all;
+}
+
+table.myTable removeCol {
+    text-align: center;
+}
+
+    table.myTable td {
+        border-width: 1px;
+        padding: 8px;
+        border-style: solid;
+        border-color: #a9c6c9;
+    }
+
+.oddrowcolor {
+    background-color: #d4e3e5;
+}
+
+.evenrowcolor {
+    background-color: #c3dde0;
+}
+
+#MainMenu {
+    height: 50px;
+    background: #FFF;
+    border-color: #000;
+    border-style: solid;
+    border-width: 0 0 1px;
+    margin: 0;
+}
+
+#tab {
+    top: 0;
+    height: 0;
+    background: repeat-x top;
+    margin: 0;
+}
+
+    #tab ul {
+        list-style: none;
+        float: left;
+        margin: 0;
+        padding: 0;
+    }
+
+    #tab li {
+        display: inline;
+        float: left;
+        margin: 0;
+        padding: 0;
+    }
+
+    #tab a {
+        background: #000 url(bright_090.gif) no-repeat right top;
+        text-decoration: none;
+        border: 0;
+        display: block;
+        float: left;
+        margin: 0;
+        padding: 0;
+    }
+
+        #tab a span {
+            display: block;
+            background: url(bleft_090.gif) no-repeat left top;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 26px;
+            color: #000;
+            font-weight: 700;
+            line-height: 50px;
+            padding: 0 15px 0 13px;
+        }
+
+        #tab a:hover, #tab li.item_active a {
+            background-position: right bottom;
+        }
+
+            #tab a:hover span, #tab li.item_active a span {
+                background-position: left bottom;
+                color: #FFF;
+                font-weight: 700;
+                font-style: normal;
+                text-decoration: none;
+            }
+
+#productIndex {
+    float: left;
+    width: 30px;
+    padding-right: 10px;
+    color: #979696;
+    text-align: left;
+}
+
+.poster {
+    width: 180px;
+    height: 180px;
+    padding-right: 20px;
+    float: left;
+}
+
+.products {
+    padding-top: 20px;
+}
+
+.product {
+    margin: 5px 0px 5px 0px;
+    height: 180px;
+}
+
+.paging {
+    text-align: center;
+    font-size: 15px;
+    padding-top: 5px;
+}
+
+    .paging a {
+        margin: 5px 5px;
+        padding: 0 5px;
+        font-size: 18px;
+        text-decoration: none;
+    }
+
+    .paging span {
+        color: #979696
+    }
+
+.selected {
+    background-color: lightgreen;
+    pointer-events: none;
+}
+
+.paging a:hover {
+    background-color: lightblue;
+}
+
+.ProductDetail {
+    padding-top: 20px;
+}
+
+#line {
+    border: dashed 0.5px;
+    color: lightgray;
+}
+.movieNumber{
+    width:10px;
+}
+
+#totalPrice{
+    font:bold;
+}
+
+.movieNumber{
+    width:50px;
+    text-align:center;
+}

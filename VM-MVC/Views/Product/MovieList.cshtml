@@ -1,0 +1,90 @@
+﻿@using VM_MVC.Models;
+@model IEnumerable<GeneralMovieInfo>
+
+@{
+    PagingInfo pagingInfo = new PagingInfo
+    {
+        PageIndex = (int)ViewBag.PageIndex,
+        RecordCount = (int)ViewBag.RecordCount
+    };
+
+    Func<int, UrlHelper, string> pageUrlAccessor = (Func<int, UrlHelper, string>)ViewBag.PageUrlAccessor;
+}
+
+@*<div class="paging">
+        @Html.PageLinks(pagingInfo, pageIndex=>pageUrlAccessor(pageIndex, Url))
+    </div>*@
+
+<div class="products">
+    @for (int i = 0; i < this.Model.Count(); i++)
+    {
+        <span>
+            @{
+                ViewBag.Index = (pagingInfo.PageIndex - 1) * pagingInfo.PageCount + i + 1;
+            }
+            @Html.DisplayFor(m => this.Model.ToList()[i])
+        </span>
+        <hr id="line" />
+    }
+</div>
+
+<div class="paging">
+    @Html.PageLinks(pagingInfo, pageIndex => pageUrlAccessor(pageIndex, Url))
+</div>
+
+
+<script>
+    function AddProToCart() {
+        var eles = document.getElementsByClassName("buttonInput");
+        for (var i = 1; i <= eles.length; i++) {
+            $("#btnAdd" + i).bind("input click", function () {
+                var eleInputs = this.parentElement.getElementsByTagName("input");
+                var eleNumber = eleInputs[0];
+                var eleBtnAdd = eleInputs[1];
+                var eleProId = eleInputs[2];
+                var elePrice = eleInputs[3];
+                var eleProName = eleInputs[4];
+                var proId = eleProId.value;
+                var proName = eleProName.value;
+                var price = elePrice.value;
+                var num = eleNumber.value;
+                $.post(
+                    "@Url.RouteUrl("AddToCart")",
+                    {
+                        productId: proId, productName: proName, price: price, number: num
+                    },
+                    function () {
+                        alertAddSuccess(eleBtnAdd);
+                    }
+                )
+            });
+        }
+    }
+
+    ///向上飘且逐渐消失的泡泡
+    function alertAddSuccess(eleBtnAdd) {
+        var eleAlert = document.createElement("span");
+        eleAlert.textContent = "+ 1";
+        eleAlert.style.color = "rgb(150, 0, 0)";
+        eleAlert.style.top = eleBtnAdd.style.top - 100;
+        eleBtnAdd.parentElement.append(eleAlert);
+        setTimeout(function () {
+            eleAlert.style.color = "rgb(150, 0, 0)";
+        }, 100);
+        setTimeout(function () {
+            eleAlert.style.color = "rgb(200, 0, 0)";
+        }, 250);
+        setTimeout(function () {
+            eleAlert.style.color = "rgb(255, 0, 0)";
+        }, 450);
+        setTimeout(function () {
+            eleBtnAdd.parentElement.removeChild(eleAlert);
+        }, 550);
+    }
+
+
+    $(document).ready(function () {
+        AddProToCart();
+    })
+</script>
+

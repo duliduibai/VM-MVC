@@ -1,0 +1,219 @@
+﻿@using VM_MVC.Models;
+@model ShoppingCart
+@{
+    ViewBag.Title = "ShoppingCart";
+    int MovieIndex = 0;
+}
+
+<div class="ShoppingCart">
+    <table id="testTableID" class="myTable" cellspacing="0">
+        <tr>
+            <th id="MovieName">片名</th>
+            <th>单价</th>
+            <th>数量</th>
+            <th>金额</th>
+            <th class="removeCol"></th>
+        </tr>
+        @foreach (ShoppingCartItem item in this.Model.Items)
+        {
+            MovieIndex += 1;
+            <tr id="row@(MovieIndex)">
+                <td>
+                    @Html.RouteLink(item.ProductName, "ProductDetail",
+                        new
+                        {
+                            ProductName = item.ProductName,
+                            ProductId = item.ProductId
+                        })
+                </td>
+                <td id="price@(MovieIndex)">
+                    ￥@item.Price.ToString("#0.00")
+                </td>
+                <td>
+                    <input class="buttonInput addNumber" id="sub@(MovieIndex)" type="button" value="-" />
+                    <input class="movieNumber" id="movieNumber@(MovieIndex)" value="@item.Quantity" />
+                    <input class="buttonInput addNumber" id="add@(MovieIndex)" type="button" value="+" />
+                    <input type="text" id="proId@(MovieIndex)" contenteditable="false" value="@item.ProductId" hidden />
+                </td>
+                <td class="subTotal" id="subTotal@(MovieIndex)">￥@item.SubTotalPrice.ToString("#0.00")</td>
+                <td>
+                    <form action="@Url.RouteUrl("Remove")" method="post">
+                        @Html.Hidden("ProductId", item.ProductId)
+                        <input class="buttonInput remove" type="submit" value="Remvoe" />
+                    </form>
+                </td>
+            </tr>
+        }
+        <tr>
+            <td colspan="3"></td>
+            <td><b>总价:</b></td>
+            <td id="totalPrice">￥@this.Model.TotalPrice.ToString("#0.00")</td>
+        </tr>
+    </table>
+    <div class="left">
+        @Html.ValidationSummary()<div style="clear: both"></div>
+    </div>
+    <div class="right">
+        <div>
+            <img src="@Url.Content("~/Content/images/continueshopping.png")" alt="" />
+            @Html.RouteLink("继续购物", "Home")
+        </div>
+        @if (ShoppingCartBinder.GetShoppingCart().TotalQuantiy > 0)
+        {
+            <div>
+                <img src="@Url.Content("~/Content/images/payment.png")" alt="" />
+                @Html.RouteLink("结账支付", "CheckOut")
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+    function Init() {
+        InitChangeButtonEvent();
+        InitInputEvent();
+    }
+
+    function InitInputEvent() {
+        var idName = "movieNumber";
+        var eles = document.getElementsByClassName(idName);
+        var timeId = 0;
+        var startTime = new Date();
+        var timeOut = 300;
+        for (var i = 1; i <= eles.length; i++) {
+            $("#movieNumber" + i).bind('input propertychange', function () {
+                if (new Date() - startTime < timeOut) {
+                    clearTimeout(timeId);
+                }
+                var eleNumber = this;
+                timeId = setTimeout(function () {
+                    var num = 0;
+                    if (eleNumber.value == '') {
+                        num = 0;
+                    }
+                    else if (eleNumber.value.startsWith("0") && eleNumber.value.length > 1) {
+                        num = eleNumber.value.substr(1);
+                    }
+                    else {
+                        num = parseFloat(eleNumber.value);
+                    }
+                    if (num == 0) {
+                        if (!confirm("Are you sure to remove it from cart?")) {
+                            return;
+                        }
+                    }
+                    var changedIndex = eleNumber.id.substr(idName.length);
+                    var elePro = document.getElementById("proId" + changedIndex);
+                    var proId = elePro.value;
+                $.post(
+                    "@Url.RouteUrl("UpdateMovieNumber")",
+                    {
+                        productId: proId, number: num
+                    },
+                    function () {
+                        ReCalcChangedMovieSubTotal(changedIndex, num);
+                        ReCalcTotalPrice();
+                    }
+                    )
+                }, timeOut);
+                startTime = new Date();
+            });
+        }
+    }
+
+    function InitChangeButtonEvent() {
+        var eles = document.getElementsByClassName("addNumber");
+        for (var i = 0; i < eles.length; i++) {
+            eles[i].onclick = function () {
+                changedIndex = this.id.substring(3);
+                var numToAdd = this.id.startsWith("sub") ? -1 : 1;
+                var proId = this.parentElement.lastElementChild.value;
+                var eleNumber = document.getElementById("movieNumber" + changedIndex);
+                var priceTemp = this.parentElement.previousElementSibling.textContent;
+                var currMovieprice = parseFloat(priceTemp.trim().substr(1));
+                var movieNumber = parseFloat(eleNumber.value) + numToAdd;
+                if (movieNumber == 0) {
+                    if (!confirm("Are you sure to remove this movie from cart?")) {
+                        return;
+                    }
+                }
+                $.post(
+                    "@Url.RouteUrl("UpdateMovieNumber")",
+                    {
+                        productId: proId, number: movieNumber
+                    },
+                    function () {
+                        ReCalcChangedMovieSubTotal(changedIndex, movieNumber);
+                        ReCalcTotalPrice();
+                    }
+                )
+            }
+        }
+    }
+
+    function RemoveZeroMovie(changedIndex) {
+        var eleRow = document.getElementById("row" + changedIndex);
+        if (eleRow) {
+            eleRow.parentNode.removeChild(eleRow);
+        }
+    }
+
+    function ReCalcChangedMovieSubTotal(changedIndex, num) {
+        if (num == 0) {
+            RemoveZeroMovie(changedIndex);
+        }
+        var eleNumber = document.getElementById("movieNumber" + changedIndex);
+        var elePrice = document.getElementById("price" + changedIndex);
+        var eleSubTotal = document.getElementById("subTotal" + changedIndex);
+        if (eleSubTotal) {
+            eleNumber.value = num;
+            var price = parseRMBToFloat(elePrice.textContent);
+            eleSubTotal.textContent = parseFloatToRMB(price * num);
+        }
+    }
+
+    function ReCalcTotalPrice() {
+        var eleRows = document.getElementsByClassName("subTotal");
+        var eleTotalPRice = document.getElementById("totalPrice");
+        var totalPrice = 0.00;
+        if (eleRows) {
+            for (var i = 0; i < eleRows.length; i++) {
+                var tempSubTotal = parseRMBToFloat(eleRows[i].textContent);
+                totalPrice += tempSubTotal;
+            }
+        }
+        eleTotalPRice.textContent = parseFloatToRMB(totalPrice);
+        return totalPrice;
+    }
+
+    function parseRMBToFloat(strRMB) {
+        return parseFloat(strRMB.trim().substr(1));
+    }
+
+    function parseFloatToRMB(number) {
+        return "￥" + number.toFixed(2);
+    }
+
+    $(document).ready(function () {
+        Init();
+    })
+    function altRows(id) {
+        if (document.getElementById) {
+
+            var table = document.getElementById(id);
+            var rows = table.getElementsByTagName("tr");
+            for (i = 0; i < rows.length; i++) {
+                if (i % 2 == 0) {
+                    rows[i].className = "evenrowcolor";
+                } else {
+                    rows[i].className = "oddrowcolor";
+                }
+            }
+        }
+    }
+
+    window.onload = function () {
+        altRows('testTableID');
+    }
+</script>
+

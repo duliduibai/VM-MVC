@@ -1,0 +1,54 @@
+﻿@model VM_MVC.Models.GeneralMovieInfo
+@using System.Web.Mvc;
+@{
+    ViewBag.Title = "GeneralMovieInfo";
+}
+
+<div class="product">
+    @{
+        MvcHtmlString htmlString = new MvcHtmlString(Model.StoryAbstract);
+        string detailUrl = Url.RouteUrl("ProductDetail", new
+        {
+            Controller = "Product",
+            Action = "Detail",
+            ProductName = Model.Name,
+            ProductId = Model.ProductID
+        });
+        <div id="productIndex">
+            @ViewBag.Index
+        </div>
+        <a href="@detailUrl">
+            <img src="@Url.Content("~/images/" + Model.Poster)" class="poster" alt="@Model.Name" />
+        </a>
+        <div class="title">@Model.Name</div>
+        <div>@Html.LabelFor(m => m.Genre): @Url.GenreLinks(Model.Genre)</div>
+        <div>@Html.LabelFor(m => m.Starring): @Url.ActorLinks(Model.Starring)</div>
+        <div>@Html.LabelFor(m => m.Director): @Model.Director</div>
+        <div>@Html.LabelFor(m => m.Language): @Model.Language</div>
+        <div>@Html.LabelFor(m => m.ReleaseYear): @Model.ReleaseYear</div>
+        <div>@Html.LabelFor(m => m.StoryAbstract): @Model.StoryAbstract</div>
+        @*<div class="addToShoppingCart">
+            <form action="@Url.RouteUrl("AddToCart")" method="post">
+                <div>
+                    <span>
+                        @Html.LabelFor(m => m.Price):
+                        ￥@Model.Price.ToString("#0.00")
+                    </span>
+                </div>
+                <input class="textInput" type="text" name="number" value="1"/>
+                <input class ="buttonInput" type="submit" value="Add To Cart" />
+                <input type="hidden" name="ProductId" value="@Model.ProductID" />
+                <input type="hidden" name="Price" value="@Model.Price" />
+                <input type="hidden" name="ProductName" value="@Model.Name" />
+            </form>
+        </div>*@
+        <div>
+            <input class="textInput" id="input@(ViewBag.Index)" type="text" name="number" value="1" />
+            <input class="buttonInput" id="btnAdd@(ViewBag.Index)" type="submit" value="Add To Cart" />
+            <input type="hidden" id="proId@(ViewBag.Index)" name="ProductId" value="@Model.ProductID" />
+            <input type="hidden" id="price@(ViewBag.Index)" name="Price" value="@Model.Price" />
+            <input type="hidden" id="name@(ViewBag.Index)" name="ProductName" value="@Model.Name" />
+        </div>
+    }
+</div>
+
