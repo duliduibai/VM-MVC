@@ -6,47 +6,81 @@
     <title></title>
     <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
     <script src="http://passport.cnblogs.com/scripts/jsencrypt.min.js"></script>
+    <script type="text/javascript" src="Scripts/jquery.cookie.js"></script>
+    <script type="text/javascript" src="Scripts/RSA.js"></script>
+    <script type="text/javascript" src="Scripts/BigInt.js"></script>
+    <script type="text/javascript" src="Scripts/Barrett.js"></script>
     <script type="text/javascript">
-        // 使用jsencrypt类库加密js方法，
-        function encryptRequest(reqUrl, data, publicKey) {
-            var encrypt = new JSEncrypt();
-            encrypt.setPublicKey(publicKey);
-            // ajax请求发送的数据对象
-            var sendData = new Object();
-            // 将data数组赋给ajax对象
-            for (var key in data) {
-                sendData[key] = encrypt.encrypt(data[key]);
+        function getPublicKey() {
+            var pubKey = "";
+            if ($.cookie('publicKey') == null) {
+                $.ajax({
+                    url: "@Url.RouteUrl("GetRSAPubKey")",
+                    type: "GET",
+                    contentType: "application/x-www-form-urlencoded; charset=utf-8",
+                    async: false,
+                    data: {},
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.Code == 0) {
+                            pubKey = data.RsaPublicKey;
+                            $.cookie('publicKey', pubKey, { expires: 1 / 1440 });
+                        }
+                        else {
+                            Config.Method.JudgeCode(data, 1);
+                        }
+                    }
+                })
             }
-
-            $.ajax({
-                url: reqUrl,
-                type: 'post',
-                data: sendData,
-                dataType: 'json',
-                //contentType: 'application/json; charset=utf-8',
-                success: function (data) {
-                    console.info(data);
-                },
-                error: function (xhr) {
-                    //console.error('出错了');
-                }
-            });
-
+            else {
+                pubKey = $.cookie('publicKey');
+            }
+            return pubKey;
         }
 
-        // Call this code when the page is done loading.
+        function RSAEncrypt_EX(publicKey, plaitString) {
+            var encrypt = new JSEncrypt();
+            encrypt.setPublicKey(publicKey);
+            return encrypt.encrypt(plaitString);
+        }
+
         $(function () {
-
             $('#testme').click(function () {
-
-                var data = [];
-                data['username'] = $('#username').val();
-                data['passwd'] = $('#passwd').val();
-
-                var pkey = $('#pubkey').val();
-                encryptRequest("@Url.RouteUrl("Login")", data, pkey);
+                var uName = $('#username').val();
+                var uPwd = $('#passwd').val();
+                if (uName == '') {
+                    alert("用户名不能为空");
+                    return;
+                }
+                if (uPwd == '') {
+                    alert("密码不能为空");
+                    return;
+                }
+                var publicKey = getPublicKey();
+                var encPwd = RSAEncrypt_EX(publicKey, uPwd);
+                var encName = RSAEncrypt_EX(publicKey, uName);
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.RouteUrl("UserLogin")",
+                    data: { "userName": encName, "pwd": encPwd, 'key': publicKey, 'URL': "" },
+                    contentType: "application/x-www-form-urlencoded; charset=utf-8",
+                    async: false,
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.result == true) {
+                            window.location.href = data.url;
+                            return false;
+                        }
+                        else {
+                            alert(data.message);
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(XMLHttpRequest.status + '||' + XMLHttpRequest.readyState + '||' + textStatus);
+                    }
+                });
             });
-        });
+        })
     </script>
 </head>
 <body>

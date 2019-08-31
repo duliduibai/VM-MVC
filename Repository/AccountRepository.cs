@@ -24,7 +24,7 @@ namespace VM.Repository
         public Client GetClientByNameAndPwd(string userName, string password)
         {
             var client = DbSet.FirstOrDefault(m => m.UserName == userName);
-            if (client.Password != password)
+            if (client != null && client.Password != password)
             {
                 client = null;
             }

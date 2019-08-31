@@ -90,6 +90,17 @@ namespace VM_MVC
                 name: "Login",
                 url: "Login",
                 defaults: new { controller = "Account", action = "Login" });
+
+            ///登陆2
+            routes.MapRoute(
+                name: "UserLogin",
+                url: "UserLogin",
+                defaults: new { controller = "Account", action = "UserLogin" });
+            ///获取公钥
+            routes.MapRoute(
+                name: "GetRSAPubKey",
+                url: "GetRSAPubKey",
+                defaults: new { controller = "Account", action = "GetRSAPubKey" });
             ///验证
             routes.MapRoute(
                 name: "Authenticate"

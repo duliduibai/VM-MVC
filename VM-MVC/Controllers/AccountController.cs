@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+using System.Web;
 using System.Web.Mvc;
 using VM.Entity;
 using VM.Service.AccountDB;
+using VM.Tools;
 
 namespace VM_MVC.Controllers
 {
@@ -25,7 +27,6 @@ namespace VM_MVC.Controllers
         public ActionResult Login()
         {
             CryptoService.RSA_GeneratePEMKey();
-            Response.Cookies.Add(new System.Web.HttpCookie("publicKey", CryptoService.PemPublicKey));
             return View();
         }
 
@@ -35,35 +36,132 @@ namespace VM_MVC.Controllers
         }
 
         [HttpPost]
-        public string Authenticate(string userName, string password)
+        public JsonResult Authenticate(string userName, string password, string key)
         {
-            CryptoService.RSA_GeneratePEMKey();
-            var decryptUserName = "";
-            decryptUserName = Encoding.UTF8.GetString(CryptoService.RSA.Decrypt(Convert.FromBase64String(userName), false));
-            password = Encoding.UTF8.GetString(CryptoService.RSA.Decrypt(Convert.FromBase64String(password), false));
-            var logError = service.Login(decryptUserName, CryptoService.MD5_Encrypt(password));
-            if (String.IsNullOrEmpty(logError))
+            string URL = Url.RouteUrl("Home");
+            var privateKey = VMEncrypt.CacheGet(key) as string;
+            if (!String.IsNullOrEmpty(privateKey))
             {
-                bLoginSuc = true;
-                Session[decryptUserName] = decryptUserName;
-                Response.Cookies.Add(new System.Web.HttpCookie("User_SessionId", userName));
-                ViewBag.IsLogin = true;
+                if (String.IsNullOrEmpty(userName))
+                {
+                    return Json(new { result = false, message = "用户名为空" }, JsonRequestBehavior.AllowGet);
+                }
+                if (String.IsNullOrEmpty(password))
+                {
+                    return Json(new { result = false, message = "密码为空" }, JsonRequestBehavior.AllowGet);
+                }
+                string decPwd = VMEncrypt.DecryptRSA(password, privateKey);
+                string decUserName = VMEncrypt.DecryptRSA(userName, privateKey);
+                ///连续两次MD5加密
+                //string md5Pwd = VMEncrypt.NoneEncrypt(VMEncrypt.NoneEncrypt(decPwd, 1), 1);
+                string md5Pwd = CryptoService.MD5_Encrypt(decPwd);
+                var logError = service.Login(decUserName, md5Pwd);
+                if (String.IsNullOrEmpty(logError))
+                {
+                    //Session[decUserName] = decUserName;
+                    Session.Add(decUserName, decUserName);
+                    HttpCookie cookie = new HttpCookie("vm_login");
+                    cookie["session_id"] = Guid.NewGuid().ToString();
+                    ViewBag.IsLogin = true;
+                    Response.Cookies.Add(cookie);
+                    if (!String.IsNullOrEmpty(URL))
+                    {
+                        return Json(new { result = true, message = "成功", url = URL }, JsonRequestBehavior.AllowGet);
+                    }
+                    else
+                    {
+                        return Json(new { result = true, message = "成功", url = "" }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+                else
+                {
+                    return Json(new { result = false, message = logError, url = "" }, JsonRequestBehavior.AllowGet);
+                }
             }
-            return logError;
+            else
+            {
+                return Json(new { result = false, message = "非法秘钥", url = "" }, JsonRequestBehavior.AllowGet);
+            }
         }
 
         [HttpPost]
-        public string Register(Client client)
+        public JsonResult Register(Client client, string key)
         {
-            var password = Encoding.UTF8.GetString(CryptoService.RSA.Decrypt(Convert.FromBase64String(client.Password), false));
-            client.Password = CryptoService.MD5_Encrypt(password);
-            client.UserName = Encoding.UTF8.GetString(CryptoService.RSA.Decrypt(Convert.FromBase64String(client.UserName), false));
-            var regError = service.Register(client);
-            return regError;
+            string URL = Url.RouteUrl("Home");
+            var privateKey = VMEncrypt.CacheGet(key) as string;
+            if (!String.IsNullOrEmpty(privateKey))
+            {
+                client.Password = VMEncrypt.DecryptRSA(client.Password, privateKey);
+                client.UserName = VMEncrypt.DecryptRSA(client.UserName, privateKey);
+                client.Password = CryptoService.MD5_Encrypt(client.Password);
+                var regError = service.Register(client);
+                if (String.IsNullOrEmpty(regError))
+                {
+                    return Json(new { result = true, message = "成功", url = URL });
+                }
+                else
+                    return Json(new { result = false, message = regError, url = URL });
+            }
+            else
+            {
+                return Json(new { result = false, message = "非法秘钥", url = URL });
+            }
         }
-    }
-    public class Test
-    {
 
+        [HttpGet]
+        public JsonResult GetRSAPubKey()
+        {
+            var pemPubKey = VMEncrypt.CreateRSAKey();
+            return Json(new { Code = 0, RsaPublicKey = pemPubKey }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult UserLogin(string userName, string pwd, string key, string URL)
+        {
+            var privateKey = VMEncrypt.CacheGet(key) as string;
+            if (!String.IsNullOrEmpty(privateKey))
+            {
+                if (String.IsNullOrEmpty(userName))
+                {
+                    return Json(new { result = false, message = "用户名为空" }, JsonRequestBehavior.AllowGet);
+                }
+                if (String.IsNullOrEmpty(pwd))
+                {
+                    return Json(new { result = false, message = "密码为空" }, JsonRequestBehavior.AllowGet);
+                }
+                string decPwd = VMEncrypt.DecryptRSA(pwd, privateKey);
+                string decUserName = VMEncrypt.DecryptRSA(userName, privateKey);
+                ///连续两次MD5加密
+                //string md5Pwd = VMEncrypt.NoneEncrypt(VMEncrypt.NoneEncrypt(decPwd, 1), 1);
+                string md5Pwd = CryptoService.MD5_Encrypt(decPwd);
+                var logError = service.Login(decUserName, md5Pwd);
+                if (String.IsNullOrEmpty(logError))
+                {
+                    HttpCookie cookie = new HttpCookie("vm_login");
+                    ///AES对称加密
+                    //cookie["u_name"] = AesEncryptHelper.EncryptAes(decUserName);
+                    //cookie["u_pwd"] = AesEncryptHelper.EncryptAes(decPwd);
+                    cookie.Expires = DateTime.Now.AddDays(7);
+                    //httpCookie["u_name"] = new AesCryptoServiceProvider().enc
+                    Response.Cookies.Add(cookie);
+                    if (!String.IsNullOrEmpty(URL))
+                    {
+                        return Json(new { result = true, message = "成功", url = URL }, JsonRequestBehavior.AllowGet);
+                    }
+                    else
+                    {
+                        return Json(new { result = true, message = "成功", url = "" }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+                else
+                {
+                    return Json(new { result = false, message = logError, url = "" }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            else
+            {
+                return Json(new { result = false, message = "非法秘钥", url = "" }, JsonRequestBehavior.AllowGet);
+            }
+        }
     }
 }

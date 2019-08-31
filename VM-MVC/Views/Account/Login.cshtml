@@ -41,9 +41,9 @@
                     <div class="clear"></div>
                     <div class="login-agileits-top">
                         @*<form action="@Url.RouteUrl("Authenticate")" method="post">*@
-                            <input type="text" id="userName" class="name" name="username" Placeholder="Username" required="" />
-                            <input type="password" id="password" class="password" name="Password" Placeholder="Password" required="" />
-                            <input type="submit" id="btnAuthenticate" value="Login">
+                        <input type="text" id="userName" class="name" name="username" Placeholder="Username" required="" />
+                        <input type="password" id="password" class="password" name="Password" Placeholder="Password" required="" />
+                        <input type="submit" id="btnAuthenticate" value="Login">
                         @*</form>*@
                     </div>
                     <div class="login-agileits-bottom">
@@ -62,14 +62,14 @@
                     <h3>Register form</h3>
                     <div class="login-agileits-top">
                         @*<form action="@Url.RouteUrl("Register")" method="post">*@
-                            <input type="text" class="name" id="regUserName" name="userName" Placeholder="Full Name" required="" />
-                            <input type="email" class="email" name="email" Placeholder="Email" required="" />
-                            <input type="text" class="phone" name="phone" Placeholder="Phone Number" required="" />
-                            <input type="password" class="password" id="regPassword" name="password" Placeholder="Password" required="" />
-                            <div class="login-check">
-                                <label class="checkbox"><input type="checkbox" name="checkbox" checked=""><i> </i> I Accept to the <a href="#">Terms &amp; Conditions</a></label>
-                            </div>
-                            <input type="submit" value="Register" id="btnRegister">
+                        <input type="text" class="name" id="regUserName" name="userName" Placeholder="Full Name" required="" />
+                        <input type="email" class="email" name="email" Placeholder="Email" required="" />
+                        <input type="text" class="phone" name="phone" Placeholder="Phone Number" required="" />
+                        <input type="password" class="password" id="regPassword" name="password" Placeholder="Password" required="" />
+                        <div class="login-check">
+                            <label class="checkbox"><input type="checkbox" name="checkbox" checked=""><i> </i> I Accept to the <a href="#">Terms &amp; Conditions</a></label>
+                        </div>
+                        <input type="submit" value="Register" id="btnRegister">
                         @*</form>*@
                     </div>
                 </div>
@@ -83,8 +83,8 @@
     <!-- //js -->
     <!--popup-js-->
     <script src="~/Scripts/jquery.magnific-popup.js" type="text/javascript"></script>
+    <script type="text/javascript" src="Scripts/jquery.cookie.js"></script>
     <script>
-        var publicKey = getCookie("publicKey");
         $(document).ready(
             function () {
                 Init();
@@ -92,17 +92,31 @@
                 InitRegister();
             }
         );
-
-        function getCookie(name) {
-            var cookies = document.cookie;
-            var list = cookies.split(";");
-            for (var i = 0; i < list.length; i++) {
-                var arr = list[i].split("=");
-                if (arr[0] == name) {
-                    return decodeURIComponent(arr[1]);
-                }
+        function getPublicKey() {
+            var pubKey = "";
+            if ($.cookie('publicKey') == null) {
+                $.ajax({
+                    url: "@Url.RouteUrl("GetRSAPubKey")",
+                    type: "GET",
+                    contentType: "application/x-www-form-urlencoded; charset=utf-8",
+                    async: false,
+                    data: {},
+                    dataType: "json",
+                    success: function (data) {
+                        if (data.Code == 0) {
+                            pubKey = data.RsaPublicKey;
+                            $.cookie('publicKey', pubKey, { expires: 1 / 1440 });
+                        }
+                        else {
+                            Config.Method.JudgeCode(data, 1);
+                        }
+                    }
+                })
             }
-            return "";
+            else {
+                pubKey = $.cookie('publicKey');
+            }
+            return pubKey;
         }
 
         function Init() {
@@ -121,6 +135,7 @@
 
         function InitLogin() {
             $("#btnAuthenticate").click(function () {
+                var publicKey = getPublicKey();
                 var userName = Encrypt($("#userName")[0].value, publicKey);
                 var passwd = Encrypt($("#password")[0].value, publicKey);
 
@@ -130,22 +145,28 @@
                     data: {
                         userName: userName,
                         password: passwd,
+                        key: publicKey
                     },
                     success: function (data) {
-                        if (data === "") {
-                            top.location.href = "@Url.RouteUrl("Home")";
+                        if (data.result == true) {
+                            window.location.href = data.url;
+                            return false;
                         }
                         else {
-                            alert(data);
+                            alert(data.message);
                         }
                     },
-                    async:false
+                    async: false,
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(XMLHttpRequest.status + '||' + XMLHttpRequest.readyState + '||' + textStatus);
+                    }
                 })
             });
         }
-        
+
         function InitRegister() {
             $("#btnRegister").click(function () {
+                var publicKey = getPublicKey();
                 var userName = Encrypt($("#regUserName")[0].value, publicKey);
                 var passwd = Encrypt($("#regPassword")[0].value, publicKey);
 
@@ -156,14 +177,16 @@
                         userName: userName,
                         password: passwd,
                         email: $(".email")[0].value,
-                        phone: $(".phone")[0].value
+                        phone: $(".phone")[0].value,
+                        key: publicKey
                     },
                     success: function (data) {
-                        if (data === "") {
-                            top.location.href = "@Url.RouteUrl("Home")";
+                        if (data.result == true) {
+                            window.location.href = data.url;
+                            return false;
                         }
                         else {
-                            alert(data);
+                            alert(data.message);
                         }
                     },
                     async:false
@@ -177,5 +200,5 @@
             return encrypt.encrypt(plaintText);
         }
     </script>
-<!--//popup-js-->
+    <!--//popup-js-->
 </div>
