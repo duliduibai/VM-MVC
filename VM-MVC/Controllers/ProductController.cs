@@ -9,6 +9,7 @@ using VM_MVC.Models;
 
 namespace VM_MVC.Controllers
 {
+    [AutheticateFilter]
     public class ProductController : VmController
     {
         public IProductService ProductService { get; private set; }

@@ -91,11 +91,6 @@ namespace VM_MVC
                 url: "Login",
                 defaults: new { controller = "Account", action = "Login" });
 
-            ///登陆2
-            routes.MapRoute(
-                name: "UserLogin",
-                url: "UserLogin",
-                defaults: new { controller = "Account", action = "UserLogin" });
             ///获取公钥
             routes.MapRoute(
                 name: "GetRSAPubKey",
@@ -116,11 +111,6 @@ namespace VM_MVC
                 name: "Logout",
                 url: "Logout",
                 defaults: new { controller = "Account", action = "Logout" });
-            ///TEST
-            routes.MapRoute(
-                name: "Test",
-                url: "Test",
-                defaults: new { controller = "Account", action = "Test" });
 
             routes.MapRoute(
                 name: "Default",

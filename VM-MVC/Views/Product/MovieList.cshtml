@@ -21,6 +21,7 @@
         <span>
             @{
                 ViewBag.Index = (pagingInfo.PageIndex - 1) * pagingInfo.PageCount + i + 1;
+                ViewBag.PageCount = pagingInfo.PageCount;
             }
             @Html.DisplayFor(m => this.Model.ToList()[i])
         </span>
